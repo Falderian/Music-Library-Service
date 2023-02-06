@@ -1,51 +1,40 @@
 class FavoritesController < ApplicationController
-  before_action :set_favorite, only: %i[ show update destroy ]
-
-  # GET /favorites
+  before_action :set_favorite, only: %i[ index update destroy ]
+  
+  # GET /favs/:id
   def index
-    @favorites = Favorite.all
-
-    render json: @favorites
-  end
-
-  # GET /favorites/1
-  def show
-    render json: @favorite
-  end
-
-  # POST /favorites
-  def create
-    @favorite = Favorite.new(favorite_params)
-
-    if @favorite.save
-      render json: @favorite, status: :created, location: @favorite
-    else
-      render json: @favorite.errors, status: :unprocessable_entity
-    end
-  end
-
-  # PATCH/PUT /favorites/1
-  def update
-    if @favorite.update(favorite_params)
+    if !@favorite.nil?
       render json: @favorite
+    else 
+      render json: 'There is no favorites for this user', status: :not_found
+    end 
+  end
+
+  # POST /favs/artist
+  def update
+    if !@favorite.nil? && !@favorite[params[:type]].nil? 
+      @favorite[params[:type]] << params[:id_to_update] unless @favorite[params[:type]].include?(params[:id_to_update])
+      @favorite.save
+      render json: @favorite, status: :ok
     else
-      render json: @favorite.errors, status: :unprocessable_entity
+      render json: 'Bad request', status: :bad_request
     end
   end
 
   # DELETE /favorites/1
   def destroy
-    @favorite.destroy
+    if !@favorite.nil? && !@favorite[params[:type]].nil?
+      @favorite[params[:type]].delete(params[:id_to_update]) if @favorite[params[:type]].include?(params[:id_to_update])
+      @favorite.save
+      render json: @favorite, status: :ok
+    else
+      render json: 'Bad request', status: :bad_request
+    end
   end
 
   private
     # Use callbacks to share common setup or constraints between actions.
-    def set_favorite
-      @favorite = Favorite.find(params[:id])
-    end
-
-    # Only allow a list of trusted parameters through.
-    def favorite_params
-      params.require(:favorite).permit(:artists, :albums, :tracks, :user_id)
+    def set_favorite      
+      @favorite = Favorite.find_by user_id: params[:user_id]
     end
 end

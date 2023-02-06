@@ -31,9 +31,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_06_082211) do
   end
 
   create_table "favorites", force: :cascade do |t|
-    t.string "artists", default: [], array: true
-    t.string "albums", default: [], array: true
-    t.string "tracks", default: [], array: true
+    t.integer "artists", default: [], array: true
+    t.integer "albums", default: [], array: true
+    t.integer "tracks", default: [], array: true
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

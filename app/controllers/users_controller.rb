@@ -1,6 +1,6 @@
 class UsersController < ApplicationController
   before_action :set_user, only: %i[ show destroy ]
-  # before_action :set_user, only: %i[ update_password ]
+  after_action :create_favorites_lib, only: %i[ create ]
   # GET /users
   def index
     @users = User.all
@@ -15,11 +15,11 @@ class UsersController < ApplicationController
   # POST /users
   def create
     @user = User.new(user_params)
-
-    if @user.save
-      render json: @user, status: :created, location: @user
+    if @user.save         
+      render json: @user, status: :created, location: @user      
     else
-      render json: @user.errors, status: :unprocessable_entity
+      debugger 
+      render json: @user.errors || @favorite.errors, status: :unprocessable_entity
     end
   end
 
@@ -56,11 +56,21 @@ class UsersController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def user_params
-      params.require(:user).permit(:login, :version)
+      params.require(:user).permit(:login, :password, :version)
     end
 
     def user_params_update_password
       @user = User.find(params[:user_id])
       params.require(:user).permit(:password, :password_new, :password_new_confirmation)
+    end
+
+    def create_favorites_lib 
+      @favorite = Favorite.new(
+        user_id: @user.id,
+        artists: [],
+        albums: [],
+        tracks: []        
+      )
+      @favorite.save
     end
 end
